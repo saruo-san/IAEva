@@ -1,0 +1,15 @@
+flowchart LR
+    U[Usuario] -->|Mensaje| S[Streamlit UI]
+    S --> A[Agent Core]
+    A -->|Heurística| T[Tools]
+    A -->|RAG| V[VectorStore (Chroma)]
+    V --> E[Ollama Embeddings]
+    A -->|LLM| L[Ollama (llama3.1)]
+    T -->|consulta| W[DuckDuckGo/Wikipedia]
+    T -->|escritura| N[notes.json]
+    T -->|razonamiento| C[Calculator]
+    subgraph Planificación
+      P1[make_plan()] --> P2[decide()]
+    end
+    S -->|Planificación| P1
+    P2 --> A
