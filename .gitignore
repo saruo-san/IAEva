@@ -1,0 +1,54 @@
+# ============================
+#  ENTORNOS VIRTUALES
+# ============================
+venv/
+.venv/
+
+# ============================
+#  CACHE DE PYTHON
+# ============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ============================
+#  ARCHIVOS TEMPORALES
+# ============================
+*.log
+*.tmp
+*.temp
+
+# ============================
+#  CONFIGURACIONES LOCALES
+# ============================
+.env
+.streamlit/
+.DS_Store
+Thumbs.db
+.vscode/
+
+# ============================
+#  BASE DE DATOS / VECTORSTORE
+# ============================
+# ChromaDB persistence
+storage/chroma/
+storage/chroma/*
+
+# ============================
+#  LOGS DEL AGENTE
+# ============================
+storage/logs/
+storage/logs/*
+
+# ============================
+#  OTROS
+# ============================
+# Modelos locales (si alguna vez descargas uno para Ollama)
+*.bin
+*.pth
+*.gguf
+
+# Archivos o carpetas de análisis
+*.ipynb_checkpoints/
+
