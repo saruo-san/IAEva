@@ -339,15 +339,17 @@ En esta sección se pueden incluir capturas relacionadas con el funcionamiento d
 
 ### 🔹 Evidencia 1: Interacciones del agente
 
-*(Agrega aquí capturas del chat, trazas internas, métricas visibles en la interfaz, etc.)*
+<img width="1881" height="925" alt="1" src="https://github.com/user-attachments/assets/3407a4f5-2dc4-4b01-a3a6-5358a7a30ab3" />
 
 ### 🔹 Evidencia 2: Logs de observabilidad
 
-*(Captura del archivo **`interactions.jsonl`** mostrando las métricas recolectadas.)*
+<img width="1467" height="214" alt="4" src="https://github.com/user-attachments/assets/ae165648-b4d1-45ce-b351-872c518b9137" />
 
 ### 🔹 Evidencia 3: Dashboard de métricas
 
-*(Agrega imágenes del dashboard con latencia, distribución de modos, herramientas y tabla de interacciones.)*
+<img width="1820" height="734" alt="2" src="https://github.com/user-attachments/assets/45e26413-99a4-474f-820c-1acac8271913" />
+
+<img width="1758" height="765" alt="3" src="https://github.com/user-attachments/assets/4ae211d8-680b-433a-96f1-369d121b8ed7" />
 
 ---
 
