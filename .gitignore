@@ -42,6 +42,11 @@ storage/logs/
 storage/logs/*
 
 # ============================
+#  MEMORIA/NOTAS (ARTEFACTOS DE EJECUCIÓN)
+# ============================
+storage/notes.json
+
+# ============================
 #  OTROS
 # ============================
 # Modelos locales (si alguna vez descargas uno para Ollama)

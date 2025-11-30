@@ -1,170 +1,384 @@
-# 🤖 Agente Organizacional – Streamlit + Ollama  
-**Proyecto Evaluación 2 – Inteligencia Artificial**
+# IAEva – Agente Organizacional con RAG, LLM, Observabilidad y Dashboard
 
-![Streamlit App Screenshot](https://raw.githubusercontent.com/saruo-san/IAEva/main/docs/captura_evidencia.png)
+Este proyecto implementa un **Agente Organizacional Inteligente** capaz de responder preguntas internas de una organización utilizando:
 
----
+- **RAG (Retrieval Augmented Generation)** para consultar documentos internos.
+- **LLM (modelo de lenguaje)** para generar respuestas.
+- **Herramientas externas** (búsqueda web).
+- **Trazabilidad completa** (planes, decisiones, herramientas utilizadas).
+- **Observabilidad** con métricas de latencia, memoria, errores y logs detallados.
+- **Dashboard interactivo** construido en Streamlit para analizar el desempeño del agente.
 
-## 📋 Descripción General
-
-Este proyecto implementa un **Agente Organizacional Inteligente**, desarrollado con **Python, Streamlit y Ollama**, que combina:
-
-- 🔍 **Consulta de información** (web y fuentes internas)
-- 🧠 **Memoria de largo y corto plazo** (RAG + contexto de chat)
-- 🛠️ **Herramientas de escritura, razonamiento y cálculo**
-- 🗂️ **Recuperación semántica (RAG) con embeddings**
-- 🧩 **Planificación y toma de decisiones**
-- 💬 **Interfaz interactiva con Streamlit**
-
-El agente es capaz de responder preguntas sobre políticas internas, generar planes de acción, realizar cálculos simples, guardar notas y mantener coherencia en las conversaciones.
+Este README documenta la **arquitectura**, **instalación**, **uso**, **estructura del proyecto** y **nuevas funcionalidades agregadas para la la actualización del proyecto**.
 
 ---
 
-## 🧱 Estructura del Proyecto
+# 📂 1. Estructura del proyecto
 
-- agente-streamlit-ep2/
-- ├─ agent/
-- │ ├─ core.py # Núcleo del agente (orquestación de herramientas y RAG)
-- │ ├─ memory.py # Memoria de corto y largo plazo
-- │ ├─ tools.py # Herramientas de consulta, escritura y cálculo
-- │ └─ planning.py # Planificación y toma de decisiones
-- │
-- ├─ data/knowledge/ # Base de conocimiento interna (archivos .md)
-- │ ├─ politicas.md
-- │ └─ procedimientos.md
-- │
-- ├─ storage/chroma/ # VectorStore persistente (se genera automáticamente)
-- │
-- ├─ docs/ # Evidencias o diagramas
-- │ └─ arquitectura.mmd # Diagrama Mermaid
-- │
-- ├─ app.py # Interfaz Streamlit
-- ├─ requirements.txt # Dependencias del proyecto
-- └─ README.md # Este archivo
+```
+IAEva/
+├── agent/
+│   ├── core.py             # Lógica principal del agente
+│   ├── memory.py           # Construcción del vectorstore (RAG)
+│   ├── planning.py         # Planificación, decisiones y trazas
+│   ├── tools.py            # Herramientas externas (Web search)
+│   ├── observability.py    # NUEVO: Métricas, logs, errores, latencia, memoria
+│
+├── storage/
+│   ├── docs/               # Documentos internos para RAG
+│   ├── logs/               # NUEVO: Logs JSONL de interacciones
+│       └── interactions.jsonl
+│
+├── app.py                  # Interfaz principal del agente en Streamlit
+├── dashboard.py            # NUEVO: Dashboard de observabilidad
+├── requirements.txt        # Dependencias del proyecto
+└── README.md               # Este archivo
+```
 
 ---
 
-## ⚙️ Instalación y Configuración
+# 🧠 2. Descripción general del agente
 
-### 1️⃣ Requisitos previos
+IAEva es un agente inteligente diseñado para ayudar a empleados dentro de una organización a obtener información clave, documentación interna y asistencia contextual.
 
-- Python **3.10 o 3.11**
-- [Ollama](https://ollama.com) instalado y corriendo localmente
-- Modelos descargados:
-  ```bash
-  ollama pull llama3.1
-  ollama pull nomic-embed-text
+El agente opera en **modos automáticos según la consulta**:
 
-- 2️⃣ Clonar el repositorio
+| Modo    | Cuándo se activa                           | Fuente                      | Ejemplo                                    |
+| ------- | ------------------------------------------ | --------------------------- | ------------------------------------------ |
+| **RAG** | Preguntas sobre documentos internos        | Archivos en `storage/docs/` | "Háblame del procedimiento de onboarding"  |
+| **LLM** | Preguntas sin contenido interno suficiente | Solo modelo                 | "Dame ideas para mejorar mi productividad" |
+| **WEB** | Preguntas externas                         | Búsqueda DuckDuckGo         | "¿Cuál es el precio del dólar hoy?"        |
+
+El agente combina planificación, análisis del mensaje del usuario y selección automática de herramientas.
+
+---
+
+# 📐 3. Arquitectura
+
+El flujo del agente sigue esta secuencia:
+
+```
+Usuario → Agente → Planificación → Elección del modo (RAG / WEB / LLM)
+        → Ejecución de herramienta (si aplica)
+        → Modelo LLM → Respuesta final
+        → Trazas + Métricas + Logging
+```
+
+### ✔ Planificación (planning.py)
+
+Determina qué modo usar, qué herramientas activar y cómo construir la respuesta.
+
+### ✔ Memoria RAG (memory.py)
+
+Construye un vectorstore usando ChromaDB.
+
+### ✔ Lógica principal (core.py)
+
+Define el comportamiento, los pasos y la integración con las herramientas.
+
+### ✔ Observabilidad (observability.py) – *NUEVO*
+
+Cada interacción registra:
+
+- Latencia (ms)
+- Error o éxito
+- Mensaje del usuario
+- Modo utilizado
+- Herramienta utilizada
+- Uso de memoria del proceso
+- Tamaño de la respuesta generada
+- Timestamp
+
+### ✔ Dashboard (dashboard.py) – *NUEVO*
+
+Genera visualizaciones útiles para evaluar desempeño.
+
+---
+
+# 🚀 4. Instalación del proyecto
+
+A continuación se describen los pasos recomendados para levantar el proyecto desde cero en una máquina local.
+
+## 4.1 Clonar el repositorio
+
+Si aún no tienes el proyecto en tu máquina:
+
+```bash
 git clone https://github.com/saruo-san/IAEva.git
-cd IAEva
+cd IAEva-main
+```
 
-- 3️⃣ Crear entorno virtual
-python -m venv .venv
-.\.venv\Scripts\activate
+> Si descargaste un ZIP, simplemente descomprímelo y entra a la carpeta `IAEva-main`.
 
-- 4️⃣ Instalar dependencias
+---
+
+## 4.2 Crear entorno virtual
+
+Se recomienda trabajar siempre dentro de un **entorno virtual** para aislar las dependencias del proyecto.
+
+### Windows (PowerShell o CMD)
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Si el entorno está activo, deberías ver algo como:
+
+```bash
+(venv) C:\Users\tu_usuario> _
+```
+
+---
+
+## 4.3 Actualizar `pip` (opcional pero recomendado)
+
+```bash
+python -m pip install --upgrade pip
+```
+
+---
+
+## 4.4 Instalar dependencias
+
+Con el entorno virtual activo, instala las dependencias del proyecto:
+
+```bash
 pip install -r requirements.txt
+```
 
-- 5️⃣ Ejecutar Ollama (en otra consola)
-ollama serve
+### Posibles problemas en Windows
 
-- 6️⃣ Iniciar la aplicación
+- **Error al compilar ****`chroma-hnswlib`**** / ****`chromadb`**\
+  Asegúrate de tener instalado **Microsoft C++ Build Tools** (MSVC v14.x o superior) con la carga de trabajo *"Desarrollo de escritorio con C++"*.
+
+- **Error ****`ImportError: Could not import ddgs python package`**\
+  Instala explícitamente las dependencias del buscador web:
+
+  ```bash
+  pip install -U ddgs duckduckgo-search
+  ```
+
+Con esto el proyecto queda listo para ejecutar.
+
+---
+
+# 🔑 5. Variables de entorno
+
+Este proyecto \*\*utiliza modelos locales ejecutados mediante **Ollama**, por lo que no requiere API keys externas como OpenAI.
+
+Para que el agente funcione correctamente, es necesario tener **Ollama instalado** y un modelo cargado (por ejemplo: `llama3`, `mistral`, etc.).
+
+El agente se comunica con Ollama de manera local usando su servidor interno (`http://localhost:11434`).
+
+> ✨ **Importante:** El agente utiliza documentos internos (RAG) y modelos locales definidos en el código. No depende de servicios externos.
+
+---
+
+# ▶ 6. Ejecutar el agente
+
+```
 streamlit run app.py
+```
 
+Esto abrirá la interfaz de chat con:
 
-Luego abre el enlace local (por defecto: http://localhost:8501
-).
+- Mensaje del usuario
+- Respuesta del agente
+- Expansores con **trazas internas** (plan, modo, herramienta)
+- Métricas debajo de cada respuesta (latencia, memoria, estado)
 
-💡 Cómo usar el agente
-🧠 Inicializar memoria larga (RAG)
+Cada interacción se guarda en:
 
-En la barra lateral:
+```
+storage/logs/interactions.jsonl
+```
 
-Presiona "Inicializar Memoria Larga (RAG)"
-Esto cargará los archivos .md desde data/knowledge.
+---
 
-💬 Chat interactivo
+# 📊 7. Dashboard de observabilidad
 
-Prueba con:
+Ejecutar:
 
-¿A qué hora se entregan los reportes semanales?
-¿Cuál es el procedimiento de onboarding?
-guardar: Llamar al proveedor el lunes
-listar notas
-calc: (12/3)+8
+```
+streamlit run dashboard.py
+```
 
-## 🗓️ Planificación y decisiones
+El dashboard muestra:
 
-En la barra lateral:
+### ✔ Resumen general
 
-Escribe un objetivo en el campo “Objetivo (para planificar)”
+- N° de interacciones
+- Latencia promedio
+- Latencia p95
+- % de errores
+- Memoria promedio del proceso
 
-Pulsa Generar plan
+### ✔ Gráfico: Evolución de latencia
 
-Luego Decidir siguiente paso (demo)
+Visualiza cómo cambia la latencia a lo largo del tiempo.
 
-##📚 Funcionalidades principales
-Categoría	Descripción	Archivo responsable
+### ✔ Gráfico: Distribución de modo
 
-- 🔍 Consulta Web	Usa DuckDuckGo y Wikipedia	agent/tools.py
-- 🧠 Memoria Semántica	RAG con Ollama Embeddings + Chroma	agent/memory.py
-- 📝 Escritura Persistente	Guarda y lista notas locales	agent/tools.py
-- 🧮 Razonamiento	Calculadora simple segura	agent/tools.py
-- 🗓️ Planificación	Genera planes paso a paso	agent/planning.py
-- ⚖️ Decisión	Evalúa próximos pasos según contexto	agent/planning.py
-- 💬 UI	Interfaz con Streamlit	app.py
-- 🧩 Ejemplos de prueba
+Permite ver qué tan frecuentemente se usa RAG, WEB o LLM.
 
-Tipo de prueba	Prompt sugerido	Resultado esperado
-- RAG (memoria interna)	“¿Cuál es el procedimiento de onboarding?”	Cita data/knowledge/procedimientos.md
-- Escritura	“guardar: Reunión con comunicaciones el jueves”	Nota guardada en storage/notes.json
-- Listar notas	“listar notas”	Muestra todas las notas
-- Razonamiento	“calc: 2*(5+3)”	Devuelve 16
-- Web	“¿Qué es inteligencia artificial?”	Resumen desde la web
-- Planificación	Objetivo: “Preparar reporte semanal”	Genera pasos numerados
-- Decisión	Botón “Decidir siguiente paso”	Devuelve recomendación
+### ✔ Gráfico: Distribución de herramientas
 
-## 🧠 Diagrama de Arquitectura
-flowchart LR
-    U[Usuario] -->|Mensaje| S[Streamlit UI]
-    S --> A[Agent Core]
-    A -->|Heurística| T[Tools]
-    A -->|RAG| V[VectorStore Chroma]
-    V --> E[Ollama Embeddings]
-    A -->|LLM| L[Ollama llama3.1]
-    T -->|consulta| W[DuckDuckGo/Wikipedia]
-    T -->|escritura| N[notes.json]
-    T -->|razonamiento| C[Calculator]
-    subgraph Planificación
-      P1[make_plan] --> P2[decide]
-    end
-    S -->|Planificación| P1
-    P2 --> A
+Muestra cuántas veces se usó `vectorstore`, `web`, o ninguna herramienta.
 
-<img width="1163" height="373" alt="Captura de pantalla 2025-10-27 172732" src="https://github.com/user-attachments/assets/dd0818ca-637a-47f6-8d39-af39b8774752" />
+### ✔ Tabla de últimas interacciones
 
+Incluye timestamp, mensaje, modo, herramienta, latencia y error.
 
-## 🖼️ Evidencias
+---
 
-- Chat RAG respondiendo “¿A qué hora se entregan los reportes semanales?”
-- Chat con “guardar:” y luego “listar notas”
-- Plan generado en el panel lateral
-- Botón de decisión funcionando
+# 📁 8. Logging (Formato JSONL)
 
-<img width="1875" height="817" alt="Captura de pantalla 2025-10-27 172040" src="https://github.com/user-attachments/assets/42cd4789-c573-49d0-9bcf-82053c86952d" />
+Las interacciones se guardan en líneas independientes con este formato:
 
+```json
+{
+  "timestamp": "2025-11-24T18:30:20.023367",
+  "user_message": "¿A qué hora se entregan los reportes semanales?",
+  "mode": "RAG",
+  "tool": "vectorstore",
+  "latency_ms": 7757.6682,
+  "error": false,
+  "error_message": null,
+  "memory_mb": 195.3789,
+  "output_chars": 842
+}
+```
 
+Estos logs permiten:
 
-## 🧾 Créditos
+- Evaluar desempeño
+- Identificar cuellos de botella
+- Auditar interacciones
+- Justificar decisiones técnicas en el informe la actualización del proyecto
 
-Desarrollado por:
-👨‍💻 Javier Muñoz y Matias Cerda
-📘 Asignatura: Inteligencia Artificial – Evaluación 2 (IAEva)
-🏫 Instituto Profesional DuocUC/ Año 2025
+---
 
-🧩 Licencia
+# 🛠 9. Herramientas del agente
 
-Este proyecto se distribuye con fines educativos bajo la licencia MIT.
-Puedes usarlo, modificarlo y compartirlo libremente citando la fuente.
+### 📌 RAG – Recuperación de Información Interna
+
+Usa ChromaDB para buscar fragmentos relevantes en:
+
+```
+storage/docs/*.md
+```
+
+### 📌 Web Search
+
+Usa DuckDuckGo vía `duckduckgo-search` o `ddgs`.
+
+### 📌 Generación LLM
+
+Base para todas las respuestas finales del agente.
+
+---
+
+# 🔍 10. Observabilidad – Funcionalidades agregadas
+
+Estas funcionalidades fueron implementadas para cumplir la la actualización del proyecto:
+
+### ✔ Logging detallado (JSONL)
+
+### ✔ Métricas por interacción
+
+- Latencia
+- Memoria del proceso
+- Tamaño de salida
+- Errores
+
+### ✔ UI del agente muestra trazabilidad
+
+- Modo usado
+- Herramienta usada
+- Plan
+- Decisiones internas
+
+### ✔ Dashboard visual con Streamlit
+
+Cumple requisitos IE5, IE6, IE7, IE8.
+
+---
+
+# 🧪 11. Testing manual recomendado
+
+Ejemplos de consultas:
+
+- "Háblame del archivo procedimientos.md"
+- "¿Qué documentos existen para onboarding?"
+- "Dame recomendaciones para mejorar la comunicación interna"
+- "¿Qué hora es en Nueva York?" (prueba de Web Search)
+
+---
+
+# 📌 12. Problemas comunes y soluciones
+
+| Problema                   | Causa                    | Solución                                |
+| -------------------------- | ------------------------ | --------------------------------------- |
+| Error al instalar chromadb | Falta de C++ Build Tools | Instalar MSVC v142 o superior           |
+| Error DDGS                 | Faltan dependencias      | `pip install -U ddgs duckduckgo-search` |
+| API no responde            | Falta OPENAI\_API\_KEY   | Crear `.env`                            |
+
+---
+
+# 🖼️ 13. Evidencias del proyecto
+
+En esta sección se pueden incluir capturas relacionadas con el funcionamiento del agente y las funcionalidades agregadas.
+
+### 🔹 Evidencia 1: Interacciones del agente
+
+<img width="1881" height="925" alt="1" src="https://github.com/user-attachments/assets/3407a4f5-2dc4-4b01-a3a6-5358a7a30ab3" />
+
+### 🔹 Evidencia 2: Logs de observabilidad
+
+<img width="1467" height="214" alt="4" src="https://github.com/user-attachments/assets/ae165648-b4d1-45ce-b351-872c518b9137" />
+
+### 🔹 Evidencia 3: Dashboard de métricas
+
+<img width="1820" height="734" alt="2" src="https://github.com/user-attachments/assets/45e26413-99a4-474f-820c-1acac8271913" />
+
+<img width="1758" height="765" alt="3" src="https://github.com/user-attachments/assets/4ae211d8-680b-433a-96f1-369d121b8ed7" />
+
+---
+
+# 🧾 14. Créditos
+
+Proyecto base: [https://github.com/saruo-san/IAEva](https://github.com/saruo-san/IAEva)\
+Modificaciones y extensiones realizadas por Javier Muñoz y Matias Cerda como parte de la evolución del proyecto.
+
+---
+
+# 📄 14. Licencia
+
+Este proyecto se distribuye con fines de mejora y mantenimiento continuo y puede ser extendido libremente.
+
+---
+
+# 📚 15. Entregables del EFT
+
+- `notebooks/AgenteDemo.ipynb+`: notebook demostrativo (RAG, agente, métricas, trazas).
+- Evidencias: usar `docs/evidence/` para capturas y gráficos.
+
+## Requisitos adicionales (EFT)
+- Python 3.10+
+- Paquetes del `requirements.txt`
+
+## Pasos rápidos en Windows PowerShell
+```powershell
+pip install -r requirements.txt
+python app.py
+python dashboard.py
+```
 
