@@ -384,6 +384,7 @@ python dashboard.py
 
 ## Notas de cambios recientes
 - Se consolidó el notebook en `notebooks/AgenteDemo.ipynb` para la defensa.
+- Se añadieron archivos a `docs/` como `Uso_IA` y `Evidence`
 - Se añadió `storage/notes.json` al `.gitignore` para no subir artefactos de ejecución.
 - El README fue actualizado para reflejar entregables y pasos rápidos.
 
