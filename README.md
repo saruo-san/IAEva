@@ -312,6 +312,11 @@ Cumple requisitos IE5, IE6, IE7, IE8.
 
 ---
 
+### Diagrama Mermaid
+
+<img width="1374" height="455" alt="image" src="https://github.com/user-attachments/assets/a54e06f8-5ad2-41dd-9095-285b1af22dad" />
+
+
 # 🧪 11. Testing manual recomendado
 
 Ejemplos de consultas:
